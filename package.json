@@ -2,6 +2,7 @@
   "name": "strapi-bulk-operator",
   "version": "0.0.5",
   "description": "Make bulk operations from .xls or .xlsx file",
+  "private": true,
   "strapi": {
     "name": "strapi-bulk-operator",
     "description": "Make bulk operations from .xls or .xlsx file",
@@ -9,31 +10,43 @@
     "displayName": "Bulk operator"
   },
   "dependencies": {
-    "@strapi/design-system": "^1.6.3",
-    "@strapi/helper-plugin": "^4.6.0",
-    "@strapi/icons": "^1.6.3",
-    "prop-types": "^15.7.2"
+    "@strapi/design-system": "^1.13.0",
+    "@strapi/helper-plugin": "^4.15.0",
+    "@strapi/icons": "^1.13.0",
+    "prop-types": "^15.8.1"
   },
   "devDependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "@babel/core": "^7.23.9",
+    "@babel/runtime": "^7.23.9",
+    "@codemirror/autocomplete": "^6.12.0",
+    "@codemirror/language": "^6.10.1",
+    "@codemirror/lint": "^6.4.2",
+    "@codemirror/search": "^6.5.5",
+    "@codemirror/state": "^6.4.0",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.24.0",
+    "@types/react": "^18.0.0",
+    "codemirror": "^6.0.1",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "react-is": "18.0.0",
     "react-router-dom": "^5.3.4",
-    "styled-components": "^5.3.6"
+    "styled-components": "^5.3.11"
   },
   "peerDependencies": {
-    "@strapi/strapi": "4.7.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "@strapi/strapi": "^4.15.0",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
     "react-router-dom": "^5.3.4",
-    "styled-components": "^5.3.6"
+    "styled-components": "^5.3.11"
   },
   "author": "Matthieu Reveilleau",
   "maintainers": [
     "Matthieu Reveilleau"
   ],
   "engines": {
-    "node": ">=14.19.1 <=18.x.x",
-    "npm": ">=6.0.0"
+    "node": ">=18.0.0 <=20.x.x",
+    "npm": ">=0.0.0"
   },
   "license": "MIT",
   "main": "strapi-admin.js",
@@ -47,5 +60,6 @@
   "bugs": {
     "url": "https://github.com/reveilleaum/strapi-bulk-operator/issues"
   },
-  "homepage": "https://github.com/reveilleaum/strapi-bulk-operator#readme"
+  "homepage": "https://github.com/reveilleaum/strapi-bulk-operator#readme",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

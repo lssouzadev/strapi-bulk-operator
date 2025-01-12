@@ -1,29 +1,32 @@
 /** @format */
 
-import React, { useState, useMemo, useEffect } from "react";
-import {
-  getContentTypes,
-  createEntries,
-  updateEntries,
-  exportEntries,
-} from "../../services/apiCalls";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import pluginPkg from "../../../../package.json";
-import { excelToJson, jsonToExcel } from "../../utils/xlsx";
-import "../../style/variables.css";
+import {
+  createEntries,
+  exportEntries,
+  getContentTypes,
+  updateEntries,
+} from "../../services/apiCalls";
 import "../../style/global.css";
+import "../../style/variables.css";
+import { excelToJson, jsonToExcel } from "../../utils/xlsx";
 
+import Alert from "../../components/Alert";
+import Button from "../../components/Button";
+import ExcelIcon from "../../components/ExcelIcon";
+import Modal from "../../components/Modal";
 import RadioBtn from "../../components/RadioBtn";
 import SelectBtn from "../../components/SelectBtn";
 import UploadBtn from "../../components/UploadBtn";
-import Button from "../../components/Button";
-import ExcelIcon from "../../components/ExcelIcon";
-import Alert from "../../components/Alert";
-import Modal from "../../components/Modal";
 
 const HomePage = () => {
-  const darkMode = document
-    .querySelector("style[data-styled='active']")
-    .innerHTML.includes("body{background:#181826;}");
+  const darkMode = useMemo(() =>
+    document
+      .querySelector("style[data-styled='active']")
+      ?.innerHTML.includes("body{background:#181826;}")
+    , []);
+
   const pageTitle = pluginPkg.strapi.displayName;
 
   const [collectionTypes, setCollectionTypes] = useState([]);
@@ -37,15 +40,15 @@ const HomePage = () => {
   const [modal, setModal] = useState(false);
 
   const titleClassName = useMemo(() => {
-    return `main-title ${darkMode ? "dark-mode" : null}`;
+    return `main-title ${darkMode ? "dark-mode" : ""}`;
   }, [darkMode]);
 
   const contentClassName = useMemo(() => {
-    return `content ${darkMode ? "dark-mode" : null}`;
+    return `content ${darkMode ? "dark-mode" : ""}`;
   }, [darkMode]);
 
   const containerClassName = useMemo(() => {
-    return `container ${darkMode ? "dark-mode" : null}`;
+    return `container ${darkMode ? "dark-mode" : ""}`;
   }, [darkMode]);
 
   const collectionsList = useMemo(() => {
@@ -55,11 +58,11 @@ const HomePage = () => {
     }));
   }, [collectionTypes]);
 
-  const convertFile = (file) => {
+  const convertFile = useCallback((file) => {
     excelToJson(file, setDataEntries);
-  };
+  }, []);
 
-  const validForm = () => {
+  const validForm = useCallback(() => {
     if (!selectedAction) {
       setError("Choose an action");
       return false;
@@ -74,67 +77,76 @@ const HomePage = () => {
     }
     setError("");
     return true;
-  };
+  }, [selectedAction, selectedCollection, dataEntries.length]);
 
-  const submit = () => {
+  const submit = useCallback(async () => {
     if (!validForm()) return false;
 
     setLoader(true);
-
-    switch (selectedAction) {
-      case "create":
-        createEntries({
-          query: selectedCollection.value,
-          data: dataEntries,
-        }).then((res) => {
-          if (res.success) {
-            setSuccess(res.success.message);
+    try {
+      switch (selectedAction) {
+        case "create":
+          const createRes = await createEntries({
+            query: selectedCollection.value,
+            data: dataEntries,
+          });
+          if (createRes.success) {
+            setSuccess(createRes.success.message);
           }
-          if (res.error) {
-            setError(res.error.message);
-            setErrorLogs(res.error.data);
-            console.log(res.error.data);
+          if (createRes.error) {
+            setError(createRes.error.message);
+            setErrorLogs(createRes.error.data);
+            console.log(createRes.error.data);
           }
-        });
-        break;
-      case "update":
-        updateEntries({
-          query: selectedCollection.value,
-          data: dataEntries,
-        }).then((res) => {
-          console.log(res);
-          if (res.success) {
-            setSuccess(res.success.message);
+          break;
+        case "update":
+          const updateRes = await updateEntries({
+            query: selectedCollection.value,
+            data: dataEntries,
+          });
+          if (updateRes.success) {
+            setSuccess(updateRes.success.message);
           }
-          if (res.error) {
-            setError(res.error.message);
-            setErrorLogs(res.error.data);
-            console.log(res.error.data);
+          if (updateRes.error) {
+            setError(updateRes.error.message);
+            setErrorLogs(updateRes.error.data);
+            console.log(updateRes.error.data);
           }
-        });
-        break;
-      case "export":
-        exportEntries({
-          query: selectedCollection.value,
-        }).then((res) => {
+          break;
+        case "export":
+          const exportRes = await exportEntries({
+            query: selectedCollection.value,
+          });
           const collectionName = `${selectedCollection.value.split(".")[1]}s`;
-          jsonToExcel(collectionName, res.data);
-        });
+          jsonToExcel(collectionName, exportRes.data);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+      console.error(err);
+    } finally {
+      setLoader(false);
     }
-
-    setLoader(false);
-  };
+  }, [selectedAction, selectedCollection, dataEntries, validForm]);
 
   useEffect(() => {
-    getContentTypes().then((res) => {
-      const collections = Object.keys(res.data).filter((key) => {
-        if (!res.data[key].plugin && res.data[key].kind === "collectionType") {
-          setCollectionTypes((init) => [...init, res.data[key]]);
-          return true;
-        }
-      });
-      if (!collections.length) setModal(true);
-    });
+    const fetchContentTypes = async () => {
+      try {
+        const res = await getContentTypes();
+        const collections = Object.keys(res.data).filter((key) => {
+          if (!res.data[key].plugin && res.data[key].kind === "collectionType") {
+            setCollectionTypes((init) => [...init, res.data[key]]);
+            return true;
+          }
+          return false;
+        });
+        if (!collections.length) setModal(true);
+      } catch (err) {
+        console.error("Error fetching content types:", err);
+        setError("Failed to load content types");
+      }
+    };
+
+    fetchContentTypes();
   }, []);
 
   return (
@@ -179,14 +191,14 @@ const HomePage = () => {
             <Alert>
               {success && <p className="success">{success}</p>}
               {error && <p className="error">{error}</p>}
-              {errorLogs.length ? (
+              {errorLogs.length > 0 && (
                 <a
                   className="logs"
                   onClick={() => jsonToExcel("errors", errorLogs)}
                 >
                   Download errors
                 </a>
-              ) : null}
+              )}
             </Alert>
           )}
           {modal && (
